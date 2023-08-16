@@ -1,21 +1,20 @@
 {
   "compilerOptions": {
     "module": "commonjs",
-    "esModuleInterop": true,
+    "target": "es2022",
+    "outDir": "dist",
+    "baseUrl": ".",
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
     "allowSyntheticDefaultImports": true,
-    "target": "es2020",
     "noImplicitAny": true,
     "moduleResolution": "node",
     "sourceMap": true,
-    "outDir": "dist",
-    "baseUrl": ".",
     "removeComments": false,
     "declaration": true,
     "allowJs": false
   },
   "include": [
-    "src/**/*"
+    "src"
   ]
 }
