@@ -1,26 +1,22 @@
 import escapeStringRegexp from 'escape-string-regexp';
 
-const cwd = typeof process === 'object' && process && typeof process.cwd === 'function'
-  ? process.cwd()
-  : '.';
+const cwd = typeof process === 'object' && process && typeof process.cwd === 'function' ? process.cwd() : '.';
 
-const natives = [].concat(
-  require('module').builtinModules,
-  'bootstrap_node',
-  'node',
-).map(n => new RegExp(`(?:\\((?:node:)?${n}(?:\\.js)?:\\d+:\\d+\\)$|^\\s*at (?:node:)?${n}(?:\\.js)?:\\d+:\\d+$)`));
+const natives = []
+  .concat(require('module').builtinModules, 'bootstrap_node', 'node')
+  .map((n) => new RegExp(`(?:\\((?:node:)?${n}(?:\\.js)?:\\d+:\\d+\\)$|^\\s*at (?:node:)?${n}(?:\\.js)?:\\d+:\\d+$)`));
 
 natives.push(
   /\((?:node:)?internal\/[^:]+:\d+:\d+\)$/,
   /\s*at (?:node:)?internal\/[^:]+:\d+:\d+$/,
-  /\/\.node-spawn-wrap-\w+-\w+\/node:\d+:\d+\)?$/
+  /\/\.node-spawn-wrap-\w+-\w+\/node:\d+:\d+\)?$/,
 );
 
-class StackUtils {
-  constructor (opts) {
+export class StackUtils {
+  constructor(opts) {
     opts = {
       ignoredPackages: [],
-      ...opts
+      ...opts,
     };
 
     if ('internals' in opts === false) {
@@ -32,26 +28,23 @@ class StackUtils {
     }
 
     this._cwd = opts.cwd.replace(/\\/g, '/');
-    this._internals = [].concat(
-      opts.internals,
-      ignoredPackagesRegExp(opts.ignoredPackages)
-    );
+    this._internals = [].concat(opts.internals, ignoredPackagesRegExp(opts.ignoredPackages));
 
     this._wrapCallSite = opts.wrapCallSite || false;
   }
 
-  static nodeInternals () {
+  static nodeInternals() {
     return [...natives];
   }
 
-  clean (stack, indent = 0) {
+  clean(stack, indent = 0) {
     indent = ' '.repeat(indent);
 
     if (!Array.isArray(stack)) {
       stack = stack.split('\n');
     }
 
-    if (!(/^\s*at /.test(stack[0])) && (/^\s*at /.test(stack[1]))) {
+    if (!/^\s*at /.test(stack[0]) && /^\s*at /.test(stack[1])) {
       stack = stack.slice(1);
     }
 
@@ -59,10 +52,10 @@ class StackUtils {
     let lastNonAtLine = null;
     const result = [];
 
-    stack.forEach(st => {
+    stack.forEach((st) => {
       st = st.replace(/\\/g, '/');
 
-      if (this._internals.some(internal => internal.test(st))) {
+      if (this._internals.some((internal) => internal.test(st))) {
         return;
       }
 
@@ -94,16 +87,16 @@ class StackUtils {
       }
     });
 
-    return result.map(line => `${indent}${line}\n`).join('');
+    return result.map((line) => `${indent}${line}\n`).join('');
   }
 
-  captureString (limit, fn = this.captureString) {
+  captureString(limit, fn = this.captureString) {
     if (typeof limit === 'function') {
       fn = limit;
       limit = Infinity;
     }
 
-    const {stackTraceLimit} = Error;
+    const { stackTraceLimit } = Error;
     if (limit) {
       Error.stackTraceLimit = limit;
     }
@@ -111,19 +104,19 @@ class StackUtils {
     const obj = {};
 
     Error.captureStackTrace(obj, fn);
-    const {stack} = obj;
+    const { stack } = obj;
     Error.stackTraceLimit = stackTraceLimit;
 
     return this.clean(stack);
   }
 
-  capture (limit, fn = this.capture) {
+  capture(limit, fn = this.capture) {
     if (typeof limit === 'function') {
       fn = limit;
       limit = Infinity;
     }
 
-    const {prepareStackTrace, stackTraceLimit} = Error;
+    const { prepareStackTrace, stackTraceLimit } = Error;
     Error.prepareStackTrace = (obj, site) => {
       if (this._wrapCallSite) {
         return site.map(this._wrapCallSite);
@@ -139,12 +132,12 @@ class StackUtils {
     const obj = {};
     Error.captureStackTrace(obj, fn);
     const { stack } = obj;
-    Object.assign(Error, {prepareStackTrace, stackTraceLimit});
+    Object.assign(Error, { prepareStackTrace, stackTraceLimit });
 
     return stack;
   }
 
-  at (fn = this.at) {
+  at(fn = this.at) {
     const [site] = this.capture(1, fn);
 
     if (!site) {
@@ -153,7 +146,7 @@ class StackUtils {
 
     const res = {
       line: site.getLineNumber(),
-      column: site.getColumnNumber()
+      column: site.getColumnNumber(),
     };
 
     setFile(res, site.getFileName(), this._cwd);
@@ -178,8 +171,7 @@ class StackUtils {
     let typename;
     try {
       typename = site.getTypeName();
-    } catch (_) {
-    }
+    } catch (_) {}
 
     if (typename && typename !== 'Object' && typename !== '[object Object]') {
       res.type = typename;
@@ -198,7 +190,7 @@ class StackUtils {
     return res;
   }
 
-  parseLine (line) {
+  parseLine(line) {
     const match = line && line.match(re);
     if (!match) {
       return null;
@@ -290,7 +282,7 @@ class StackUtils {
   }
 }
 
-function setFile (result, filename, cwd) {
+function setFile(result, filename, cwd) {
   if (filename) {
     filename = filename.replace(/\\/g, '/');
     if (filename.startsWith(`${cwd}/`)) {
@@ -306,7 +298,7 @@ function ignoredPackagesRegExp(ignoredPackages) {
     return [];
   }
 
-  const packages = ignoredPackages.map(mod => escapeStringRegexp(mod));
+  const packages = ignoredPackages.map((mod) => escapeStringRegexp(mod));
 
   return new RegExp(`[\/\\\\]node_modules[\/\\\\](?:${packages.join('|')})[\/\\\\][^:]+:\\d+:\\d+`);
 }
@@ -314,29 +306,27 @@ function ignoredPackagesRegExp(ignoredPackages) {
 const re = new RegExp(
   '^' +
     // Sometimes we strip out the '    at' because it's noisy
-  '(?:\\s*at )?' +
+    '(?:\\s*at )?' +
     // $1 = ctor if 'new'
-  '(?:(new) )?' +
+    '(?:(new) )?' +
     // $2 = function name (can be literally anything)
     // May contain method at the end as [as xyz]
-  '(?:(.*?) \\()?' +
+    '(?:(.*?) \\()?' +
     // (eval at <anonymous> (file.js:1:1),
     // $3 = eval origin
     // $4:$5:$6 are eval file/line/col, but not normally reported
-  '(?:eval at ([^ ]+) \\((.+?):(\\d+):(\\d+)\\), )?' +
+    '(?:eval at ([^ ]+) \\((.+?):(\\d+):(\\d+)\\), )?' +
     // file:line:col
     // $7:$8:$9
     // $10 = 'native' if native
-  '(?:(.+?):(\\d+):(\\d+)|(native))' +
+    '(?:(.+?):(\\d+):(\\d+)|(native))' +
     // maybe close the paren, then end
     // if $11 is ), then we only allow balanced parens in the filename
     // any imbalance is placed on the fname.  This is a heuristic, and
     // bound to be incorrect in some edge cases.  The bet is that
     // having weird characters in method names is more common than
     // having weird characters in filenames, which seems reasonable.
-  '(\\)?)$'
+    '(\\)?)$',
 );
 
 const methodRe = /^(.*?) \[as (.*?)\]$/;
-
-module.exports = StackUtils;
