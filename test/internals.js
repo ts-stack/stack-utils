@@ -1,7 +1,7 @@
 'use strict';
 
 const t = require('tap');
-const StackUtils = require('../');
+const { StackUtils } = require('../dist');
 
 const utils = require('./_utils');
 
@@ -36,7 +36,7 @@ t.test('removes namespaced internal modules', t => {
     'Object.<anonymous> (test/test.js:94:3)',
     'Module.replacementCompile (node_modules/append-transform/index.js:58:13)',
     'Object.<anonymous> (node_modules/append-transform/index.js:62:4)',
-  ])
+  ]);
   t.plan(1);
   t.equal(stackUtils.clean(stack), expectedStack);
 });

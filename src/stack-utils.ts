@@ -1,9 +1,12 @@
-import escapeStringRegexp from 'escape-string-regexp';
+import { builtinModules } from 'module';
 
-const cwd = typeof process === 'object' && process && typeof process.cwd === 'function' ? process.cwd() : '.';
+import { StackUtilsOptions, StackData, StackLineData, CallSiteLike } from './types/mix';
+
+type CallSite = NodeJS.CallSite;
+const cwd = typeof process == 'object' && process && typeof process.cwd == 'function' ? process.cwd() : '.';
 
 const natives = []
-  .concat(require('module').builtinModules, 'bootstrap_node', 'node')
+  .concat(builtinModules, 'bootstrap_node', 'node')
   .map((n) => new RegExp(`(?:\\((?:node:)?${n}(?:\\.js)?:\\d+:\\d+\\)$|^\\s*at (?:node:)?${n}(?:\\.js)?:\\d+:\\d+$)`));
 
 natives.push(
@@ -12,14 +15,20 @@ natives.push(
   /\/\.node-spawn-wrap-\w+-\w+\/node:\d+:\d+\)?$/,
 );
 
+type wrapCallSiteFn = (callSite: CallSite, index: number, array: CallSite[]) => CallSite;
+
 export class StackUtils {
-  constructor(opts) {
+  private _cwd: string;
+  private _internals: RegExp[];
+  private _wrapCallSite: wrapCallSiteFn;
+
+  constructor(opts: StackUtilsOptions) {
     opts = {
       ignoredPackages: [],
       ...opts,
     };
 
-    if ('internals' in opts === false) {
+    if (!opts.internals) {
       opts.internals = StackUtils.nodeInternals();
     }
 
@@ -30,16 +39,14 @@ export class StackUtils {
     this._cwd = opts.cwd.replace(/\\/g, '/');
     this._internals = [].concat(opts.internals, ignoredPackagesRegExp(opts.ignoredPackages));
 
-    this._wrapCallSite = opts.wrapCallSite || false;
+    this._wrapCallSite = opts.wrapCallSite;
   }
 
   static nodeInternals() {
     return [...natives];
   }
 
-  clean(stack, indent = 0) {
-    indent = ' '.repeat(indent);
-
+  clean(stack: string | string[], indent = 0) {
     if (!Array.isArray(stack)) {
       stack = stack.split('\n');
     }
@@ -49,8 +56,8 @@ export class StackUtils {
     }
 
     let outdent = false;
-    let lastNonAtLine = null;
-    const result = [];
+    let lastNonAtLine: string = null;
+    const result: string[] = [];
 
     stack.forEach((st) => {
       st = st.replace(/\\/g, '/');
@@ -87,11 +94,12 @@ export class StackUtils {
       }
     });
 
-    return result.map((line) => `${indent}${line}\n`).join('');
+    const indentStr = ' '.repeat(indent);
+    return result.map((line) => `${indentStr}${line}\n`).join('');
   }
 
-  captureString(limit, fn = this.captureString) {
-    if (typeof limit === 'function') {
+  captureString(limit: number, fn = this.captureString) {
+    if (typeof limit == 'function') {
       fn = limit;
       limit = Infinity;
     }
@@ -101,7 +109,7 @@ export class StackUtils {
       Error.stackTraceLimit = limit;
     }
 
-    const obj = {};
+    const obj: any = {};
 
     Error.captureStackTrace(obj, fn);
     const { stack } = obj;
@@ -110,8 +118,8 @@ export class StackUtils {
     return this.clean(stack);
   }
 
-  capture(limit, fn = this.capture) {
-    if (typeof limit === 'function') {
+  capture(limit: number, fn = this.capture) {
+    if (typeof limit == 'function') {
       fn = limit;
       limit = Infinity;
     }
@@ -129,7 +137,7 @@ export class StackUtils {
       Error.stackTraceLimit = limit;
     }
 
-    const obj = {};
+    const obj: any = {};
     Error.captureStackTrace(obj, fn);
     const { stack } = obj;
     Object.assign(Error, { prepareStackTrace, stackTraceLimit });
@@ -137,7 +145,7 @@ export class StackUtils {
     return stack;
   }
 
-  at(fn = this.at) {
+  at(fn: (...args: any[]) => any = this.at) {
     const [site] = this.capture(1, fn);
 
     if (!site) {
@@ -147,7 +155,7 @@ export class StackUtils {
     const res = {
       line: site.getLineNumber(),
       column: site.getColumnNumber(),
-    };
+    } as CallSiteLike;
 
     setFile(res, site.getFileName(), this._cwd);
 
@@ -190,7 +198,7 @@ export class StackUtils {
     return res;
   }
 
-  parseLine(line) {
+  parseLine(line: string) {
     const match = line && line.match(re);
     if (!match) {
       return null;
@@ -209,7 +217,7 @@ export class StackUtils {
     const closeParen = match[11] === ')';
     let method;
 
-    const res = {};
+    const res = {} as StackLineData;
 
     if (lnum) {
       res.line = Number(lnum);
@@ -282,7 +290,7 @@ export class StackUtils {
   }
 }
 
-function setFile(result, filename, cwd) {
+function setFile(result: StackData, filename: string, cwd: string) {
   if (filename) {
     filename = filename.replace(/\\/g, '/');
     if (filename.startsWith(`${cwd}/`)) {
@@ -293,12 +301,12 @@ function setFile(result, filename, cwd) {
   }
 }
 
-function ignoredPackagesRegExp(ignoredPackages) {
+function ignoredPackagesRegExp(ignoredPackages: string[]): RegExp | any[] {
   if (ignoredPackages.length === 0) {
     return [];
   }
 
-  const packages = ignoredPackages.map((mod) => escapeStringRegexp(mod));
+  const packages = ignoredPackages.map((mod) => (escapeStringRegexp as any)(mod));
 
   return new RegExp(`[\/\\\\]node_modules[\/\\\\](?:${packages.join('|')})[\/\\\\][^:]+:\\d+:\\d+`);
 }
@@ -330,3 +338,15 @@ const re = new RegExp(
 );
 
 const methodRe = /^(.*?) \[as (.*?)\]$/;
+
+function escapeStringRegexp(str: string) {
+	if (typeof str !== 'string') {
+		throw new TypeError('Expected a string');
+	}
+
+	// Escape characters with special meaning either inside or outside character sets.
+	// Use a simple backslash escape when it’s always valid, and a `\xnn` escape when the simpler form would be disallowed by Unicode patterns’ stricter grammar.
+	return str
+		.replace(/[|\\{}()[\]^$+*?.]/g, '\\$&')
+		.replace(/-/g, '\\x2d');
+}

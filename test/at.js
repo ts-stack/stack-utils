@@ -1,7 +1,7 @@
 'use strict';
 // some capture edge cases not already covered by other tests
 
-const StackUtils = require('../');
+const { StackUtils } = require('../dist');
 const t = require('tap');
 
 const stack = new StackUtils();

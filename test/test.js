@@ -2,7 +2,7 @@
 
 const path = require('path');
 const t = require('tap');
-const StackUtils = require('../');
+const { StackUtils } = require('../dist');
 const CaptureFixture = require('./fixtures/capture-fixture');
 const utils = require('./_utils');
 
@@ -19,21 +19,21 @@ t.test('must be called with new', t => {
 });
 
 t.test('ok if called without a process object', t => {
-  const proc = process
-  const cwd = proc.cwd().replace(/\\/g, '/')
-  t.teardown(() => global.process = proc)
-  global.process = null
-  const StackUtils = t.mock('../', {
+  const proc = process;
+  const cwd = proc.cwd().replace(/\\/g, '/');
+  t.teardown(() => global.process = proc);
+  global.process = null;
+  const { StackUtils } = t.mock('../dist', {
     // need a fresh copy of these because they also look at global process
     'source-map-support': t.mock('source-map-support'),
     'own-or-env': t.mock('own-or-env'),
-  })
-  const expected = `${cwd}/foo (foo.js:3:8)\n`
-  const raw = `    at ${expected}\n`
-  const stack = new StackUtils({ internals: [] })
-  t.equal(stack.clean(raw), expected, 'no cwd is stripped off')
-  t.end()
-})
+  });
+  const expected = `${cwd}/foo (foo.js:3:8)\n`;
+  const raw = `    at ${expected}\n`;
+  const stack = new StackUtils({ internals: [] });
+  t.equal(stack.clean(raw), expected, 'no cwd is stripped off');
+  t.end();
+});
 
 t.test('clean: truncates cwd', t => {
   const expectedArray = [

@@ -1,7 +1,7 @@
 'use strict';
 
 const t = require('tap');
-const StackUtils = require('../');
+const { StackUtils } = require('../dist');
 const longStackTraces = require('./fixtures/long-stack-traces');
 const pify = require('pify');
 const nestedErrors = pify(require('./fixtures/nested-errors'), require('bluebird'));
