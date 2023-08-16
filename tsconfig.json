@@ -15,6 +15,7 @@
     "allowJs": false
   },
   "include": [
-    "src"
+    "src",
+    "test"
   ]
 }
