@@ -1,6 +1,6 @@
 import { builtinModules } from 'module';
 
-import { StackUtilsOptions, StackData, StackLineData, CallSiteLike } from './types/mix';
+import { StackUtilsOptions, StackData, StackLineData, CallSiteLike } from './mix';
 
 type CallSite = NodeJS.CallSite;
 const cwd = typeof process == 'object' && process && typeof process.cwd == 'function' ? process.cwd() : '.';
