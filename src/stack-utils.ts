@@ -28,7 +28,7 @@ export class StackUtils {
     }
 
     if ('cwd' in this.opts === false) {
-      this.opts.cwd = typeof process == 'object' && process && typeof process.cwd == 'function' ? process.cwd() : '.';
+      this.opts.cwd = '';
     }
 
     this.cwd = this.opts.cwd.replace(/\\/g, '/');
@@ -84,7 +84,9 @@ export class StackUtils {
         }
       }
 
-      st = st.replace(`${this.cwd}/`, '');
+      if (this.cwd) {
+        st = st.replace(`${this.cwd}/`, '');
+      }
 
       if (st) {
         if (isAtLine) {
@@ -350,10 +352,10 @@ export class StackUtils {
   protected setFile(result: StackData, filename: string, cwd: string) {
     if (filename) {
       filename = filename.replace(/\\/g, '/');
-      if (filename.startsWith(`${cwd}/`)) {
+      if (cwd && filename.startsWith(`${cwd}/`)) {
         filename = filename.slice(cwd.length + 1);
       }
-  
+
       result.file = filename;
     }
   }
@@ -362,9 +364,9 @@ export class StackUtils {
     if (ignoredPackages.length === 0) {
       return [];
     }
-  
+
     const packages = ignoredPackages.map((mod) => this.escapeStringRegexp(mod));
-  
+
     return new RegExp(`[\/\\\\]node_modules[\/\\\\](?:${packages.join('|')})[\/\\\\][^:]+:\\d+:\\d+`);
   }
 
@@ -372,7 +374,7 @@ export class StackUtils {
     if (typeof str !== 'string') {
       throw new TypeError('Expected a string');
     }
-  
+
     // Escape characters with special meaning either inside or outside character sets.
     // Use a simple backslash escape when it’s always valid, and a `\xnn` escape when the simpler form would be disallowed by Unicode patterns’ stricter grammar.
     return str.replace(/[|\\{}()[\]^$+*?.]/g, '\\$&').replace(/-/g, '\\x2d');
