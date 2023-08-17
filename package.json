@@ -22,7 +22,6 @@
     "eslint": "^8.45.0",
     "jest": "^29.6.1",
     "nested-error-stacks": "^2.1.0",
-    "nodemon": "^3.0.1",
     "pify": "^4.0.1",
     "prettier": "^3.0.0",
     "q": "^1.5.1",
