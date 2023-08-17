@@ -11,32 +11,42 @@
       "processId": "${command:PickProcess}"
     },
     {
+      "name": "Launch tmp file",
+      "program": "${workspaceFolder}/src/tmp.ts",
+      "request": "launch",
+      "skipFiles": [
+        "<node_internals>/**"
+      ],
+      "type": "node"
+    },
+    {
       "type": "node",
       "request": "launch",
-      "name": "Jest Current File",
-      "program": "${workspaceFolder}/node_modules/.bin/jest",
+      "name": "Tap Current File",
+      "program": "${workspaceFolder}/node_modules/.bin/tap",
       "args": [
-        "${fileBasenameNoExtension}",
-        "--detectOpenHandles"
+        "test/${fileBasenameNoExtension}.js",
+        "--timeout",
+        "100000",
       ],
       "console": "integratedTerminal",
       "internalConsoleOptions": "neverOpen",
       "windows": {
-        "program": "${workspaceFolder}/node_modules/jest/bin/jest",
+        "program": "${workspaceFolder}/node_modules/tap/bin/tap",
       }
     },
     {
       "type": "node",
       "request": "launch",
-      "name": "Jest All",
-      "program": "${workspaceFolder}/node_modules/.bin/jest",
+      "name": "Tap All",
+      "program": "${workspaceFolder}/node_modules/.bin/tap",
       "args": [
         "--runInBand"
       ],
       "console": "integratedTerminal",
       "internalConsoleOptions": "neverOpen",
       "windows": {
-        "program": "${workspaceFolder}/node_modules/jest/bin/jest",
+        "program": "${workspaceFolder}/node_modules/tap/bin/tap",
       }
     },
   ]
