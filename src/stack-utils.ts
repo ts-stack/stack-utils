@@ -32,7 +32,7 @@ export class StackUtils {
     }
 
     this.cwd = this.opts.cwd.replace(/\\/g, '/');
-    this.internals = [].concat(this.opts.internals, ignoredPackagesRegExp(this.opts.ignoredPackages));
+    this.internals = [].concat(this.opts.internals, this.ignoredPackagesRegExp(this.opts.ignoredPackages));
 
     this.wrapCallSite = this.opts.wrapCallSite;
   }
@@ -199,7 +199,7 @@ export class StackUtils {
       column: site.getColumnNumber(),
     } as CallSiteLike;
 
-    setFile(res, site.getFileName(), this.cwd);
+    this.setFile(res, site.getFileName(), this.cwd);
 
     if (site.isConstructor()) {
       Object.defineProperty(res, 'constructor', {
@@ -316,7 +316,7 @@ export class StackUtils {
       }
     }
 
-    setFile(res, file, this.cwd);
+    this.setFile(res, file, this.cwd);
 
     if (ctor) {
       Object.defineProperty(res, 'constructor', {
@@ -346,27 +346,37 @@ export class StackUtils {
 
     return res;
   }
-}
 
-function setFile(result: StackData, filename: string, cwd: string) {
-  if (filename) {
-    filename = filename.replace(/\\/g, '/');
-    if (filename.startsWith(`${cwd}/`)) {
-      filename = filename.slice(cwd.length + 1);
+  protected setFile(result: StackData, filename: string, cwd: string) {
+    if (filename) {
+      filename = filename.replace(/\\/g, '/');
+      if (filename.startsWith(`${cwd}/`)) {
+        filename = filename.slice(cwd.length + 1);
+      }
+  
+      result.file = filename;
     }
-
-    result.file = filename;
-  }
-}
-
-function ignoredPackagesRegExp(ignoredPackages: string[]): RegExp | any[] {
-  if (ignoredPackages.length === 0) {
-    return [];
   }
 
-  const packages = ignoredPackages.map((mod) => (escapeStringRegexp as any)(mod));
+  protected ignoredPackagesRegExp(ignoredPackages: string[]): RegExp | any[] {
+    if (ignoredPackages.length === 0) {
+      return [];
+    }
+  
+    const packages = ignoredPackages.map((mod) => this.escapeStringRegexp(mod));
+  
+    return new RegExp(`[\/\\\\]node_modules[\/\\\\](?:${packages.join('|')})[\/\\\\][^:]+:\\d+:\\d+`);
+  }
 
-  return new RegExp(`[\/\\\\]node_modules[\/\\\\](?:${packages.join('|')})[\/\\\\][^:]+:\\d+:\\d+`);
+  protected escapeStringRegexp(str: string) {
+    if (typeof str !== 'string') {
+      throw new TypeError('Expected a string');
+    }
+  
+    // Escape characters with special meaning either inside or outside character sets.
+    // Use a simple backslash escape when it’s always valid, and a `\xnn` escape when the simpler form would be disallowed by Unicode patterns’ stricter grammar.
+    return str.replace(/[|\\{}()[\]^$+*?.]/g, '\\$&').replace(/-/g, '\\x2d');
+  }
 }
 
 const re = new RegExp(
@@ -394,13 +404,3 @@ const re = new RegExp(
     // having weird characters in filenames, which seems reasonable.
     '(\\)?)$',
 );
-
-function escapeStringRegexp(str: string) {
-  if (typeof str !== 'string') {
-    throw new TypeError('Expected a string');
-  }
-
-  // Escape characters with special meaning either inside or outside character sets.
-  // Use a simple backslash escape when it’s always valid, and a `\xnn` escape when the simpler form would be disallowed by Unicode patterns’ stricter grammar.
-  return str.replace(/[|\\{}()[\]^$+*?.]/g, '\\$&').replace(/-/g, '\\x2d');
-}
