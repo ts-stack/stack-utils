@@ -13,9 +13,9 @@ natives.push(
 );
 
 export class StackUtils {
-  protected _cwd: string;
-  protected _internals: RegExp[];
-  protected _wrapCallSite: (callSite: NodeJS.CallSite) => NodeJS.CallSite;
+  protected cwd: string;
+  protected internals: RegExp[];
+  protected wrapCallSite: (callSite: NodeJS.CallSite) => NodeJS.CallSite;
 
   constructor(protected opts?: StackUtilsOptions) {
     this.opts = {
@@ -31,10 +31,10 @@ export class StackUtils {
       this.opts.cwd = typeof process == 'object' && process && typeof process.cwd == 'function' ? process.cwd() : '.';
     }
 
-    this._cwd = this.opts.cwd.replace(/\\/g, '/');
-    this._internals = [].concat(this.opts.internals, ignoredPackagesRegExp(this.opts.ignoredPackages));
+    this.cwd = this.opts.cwd.replace(/\\/g, '/');
+    this.internals = [].concat(this.opts.internals, ignoredPackagesRegExp(this.opts.ignoredPackages));
 
-    this._wrapCallSite = this.opts.wrapCallSite;
+    this.wrapCallSite = this.opts.wrapCallSite;
   }
 
   /**
@@ -69,7 +69,7 @@ export class StackUtils {
     stack.forEach((st) => {
       st = st.replace(/\\/g, '/');
 
-      if (this._internals.some((internal) => internal.test(st))) {
+      if (this.internals.some((internal) => internal.test(st))) {
         return;
       }
 
@@ -84,7 +84,7 @@ export class StackUtils {
         }
       }
 
-      st = st.replace(`${this._cwd}/`, '');
+      st = st.replace(`${this.cwd}/`, '');
 
       if (st) {
         if (isAtLine) {
@@ -151,8 +151,8 @@ export class StackUtils {
 
     const { prepareStackTrace, stackTraceLimit } = Error;
     Error.prepareStackTrace = (obj, site) => {
-      if (this._wrapCallSite) {
-        return site.map(this._wrapCallSite);
+      if (this.wrapCallSite) {
+        return site.map(this.wrapCallSite);
       }
 
       return site;
@@ -199,7 +199,7 @@ export class StackUtils {
       column: site.getColumnNumber(),
     } as CallSiteLike;
 
-    setFile(res, site.getFileName(), this._cwd);
+    setFile(res, site.getFileName(), this.cwd);
 
     if (site.isConstructor()) {
       Object.defineProperty(res, 'constructor', {
@@ -316,7 +316,7 @@ export class StackUtils {
       }
     }
 
-    setFile(res, file, this._cwd);
+    setFile(res, file, this.cwd);
 
     if (ctor) {
       Object.defineProperty(res, 'constructor', {
