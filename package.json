@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "",
   "main": "dist/index",
-  "types": "dist/index",
+  "types": "src/index",
   "scripts": {
     "build": "rimraf dist/* && tsc -p tsconfig.build.json",
     "test": "tap"
