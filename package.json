@@ -1,15 +1,21 @@
 {
-  "name": "starter",
+  "name": "@ts-stack/stack-utils",
   "version": "1.0.0",
-  "description": "",
+  "description": "Captures and cleans stack traces",
   "main": "dist/index",
   "types": "src/index",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ts-stack/stack-utils.git"
+  },
+  "homepage": "https://github.com/ts-stack/stack-utils",
   "scripts": {
     "build": "rimraf dist/* && tsc -p tsconfig.build.json",
-    "test": "tap"
+    "test": "tap",
+    "posttest": "rimraf .nyc_output"
   },
   "keywords": [],
-  "author": "",
+  "author": "Isaac Z. Schlueter, James Talmage, Костя Третяк and Contributors",
   "license": "MIT",
   "devDependencies": {
     "@types/eslint": "^8.44.0",
@@ -33,6 +39,6 @@
     "typescript": "^5.1.6"
   },
   "tap": {
-    "check-coverage": true
+    "check-coverage": false
   }
 }

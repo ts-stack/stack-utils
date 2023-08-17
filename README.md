@@ -10,7 +10,6 @@ This is a fork of the [tapjs/stack-utils v2.0.5 project](https://github.com/tapj
 $ npm install --save @ts-stack/stack-utils
 ```
 
-
 ## Usage
 
 ```ts

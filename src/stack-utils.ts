@@ -1,6 +1,6 @@
 import { builtinModules } from 'module';
 
-import { StackUtilsOptions, StackData, StackLineData, CallSiteLike } from './mix';
+import type { StackUtilsOptions, StackData, StackLineData, CallSiteLike } from './mix';
 
 const natives = []
   .concat(builtinModules, 'bootstrap_node', 'node')
