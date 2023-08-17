@@ -52,6 +52,8 @@ export class StackUtils {
    * Returns a `string` with the cleaned up stack (always terminated with a `\n` newline character).
    * Spaces at the start of each line are trimmed, indentation can be added by setting `indent` to the
    * desired number of spaces.
+   * 
+   * @todo Refactor this!
    */
   clean(stack: string | string[], indent = 0) {
     if (!Array.isArray(stack)) {
@@ -76,12 +78,12 @@ export class StackUtils {
       const isAtLine = /^\s*at /.test(st);
 
       if (outdent) {
-        if (this.opts.removePrefixAt) {
+        if (this.opts.removeFirstLine) {
           st = st.trimEnd().replace(/^(\s+)at /, '$1');
         }
       } else {
-        st = st.trim();
         if (isAtLine) {
+          st = st.trim();
           st = st.slice(3);
         }
       }
@@ -112,10 +114,6 @@ export class StackUtils {
   /**
    * Captures the current stack trace, cleans it using `stackUtils.clean(stack)`, and returns a string with
    * the cleaned stack trace. It takes the same arguments as `stackUtils.capture`.
-   *
-   * @param limit
-   * @param fn
-   * @returns
    */
   captureString(limit: number, fn = this.captureString) {
     if (typeof limit == 'function') {
