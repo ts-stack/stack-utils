@@ -76,7 +76,9 @@ export class StackUtils {
       const isAtLine = /^\s*at /.test(st);
 
       if (outdent) {
-        st = st.trimEnd().replace(/^(\s+)at /, '$1');
+        if (this.opts.removePrefixAt) {
+          st = st.trimEnd().replace(/^(\s+)at /, '$1');
+        }
       } else {
         st = st.trim();
         if (isAtLine) {

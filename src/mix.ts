@@ -6,6 +6,10 @@ export interface StackUtilsOptions {
    */
   removeFirstLine?: boolean;
   /**
+   * Default - `false`.
+   */
+  removePrefixAt?: boolean;
+  /**
    * A set of regular expressions that match internal stack trace lines which should be culled
    * from the stack trace. The default is `StackUtils.nodeInternals()`, this can be disabled by setting `[]`
    * or appended using `StackUtils.nodeInternals().concat(additionalRegExp)`.  See also `ignoredPackages`.
