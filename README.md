@@ -2,7 +2,7 @@
 
 > Captures and cleans stack traces.
 
-This is a fork of the [tapjs/stack-utils v2.0.5 project](https://github.com/tapjs/stack-utils/tree/v2.0.5)
+This is a fork of the [tapjs/stack-utils v2.0.5](https://github.com/tapjs/stack-utils/tree/v2.0.5)
 
 ## Install
 
