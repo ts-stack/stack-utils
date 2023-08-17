@@ -1,5 +1,11 @@
 export interface StackUtilsOptions {
   /**
+   * Is it necessary to delete the first line of the error that starts with `error.message`?
+   *
+   * Defult - `false`.
+   */
+  removeFirstLine?: boolean;
+  /**
    * A set of regular expressions that match internal stack stack trace lines which should be culled
    * from the stack trace. The default is `StackUtils.nodeInternals()`, this can be disabled by setting `[]`
    * or appended using `StackUtils.nodeInternals().concat(additionalRegExp)`.  See also `ignoredPackages`.
@@ -8,7 +14,7 @@ export interface StackUtilsOptions {
   /**
    * An array of npm modules to be culled from the stack trace. This list will mapped to regular
    * expressions and merged with the `internals`.
-   * 
+   *
    * Default `''`
    */
   ignoredPackages?: string[];

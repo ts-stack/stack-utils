@@ -13,28 +13,28 @@ natives.push(
 );
 
 export class StackUtils {
-  private _cwd: string;
-  private _internals: RegExp[];
-  private _wrapCallSite: (callSite: NodeJS.CallSite) => NodeJS.CallSite;
+  protected _cwd: string;
+  protected _internals: RegExp[];
+  protected _wrapCallSite: (callSite: NodeJS.CallSite) => NodeJS.CallSite;
 
-  constructor(opts: StackUtilsOptions) {
-    opts = {
+  constructor(protected opts?: StackUtilsOptions) {
+    this.opts = {
       ignoredPackages: [],
       ...opts,
     };
 
-    if (!opts.internals) {
-      opts.internals = StackUtils.nodeInternals();
+    if (!this.opts.internals) {
+      this.opts.internals = StackUtils.nodeInternals();
     }
 
-    if ('cwd' in opts === false) {
-      opts.cwd = typeof process == 'object' && process && typeof process.cwd == 'function' ? process.cwd() : '.';
+    if ('cwd' in this.opts === false) {
+      this.opts.cwd = typeof process == 'object' && process && typeof process.cwd == 'function' ? process.cwd() : '.';
     }
 
-    this._cwd = opts.cwd.replace(/\\/g, '/');
-    this._internals = [].concat(opts.internals, ignoredPackagesRegExp(opts.ignoredPackages));
+    this._cwd = this.opts.cwd.replace(/\\/g, '/');
+    this._internals = [].concat(this.opts.internals, ignoredPackagesRegExp(this.opts.ignoredPackages));
 
-    this._wrapCallSite = opts.wrapCallSite;
+    this._wrapCallSite = this.opts.wrapCallSite;
   }
 
   /**
@@ -58,7 +58,7 @@ export class StackUtils {
       stack = stack.split('\n');
     }
 
-    if (!/^\s*at /.test(stack[0]) && /^\s*at /.test(stack[1])) {
+    if (this.opts.removeFirstLine && !/^\s*at /.test(stack[0]) && /^\s*at /.test(stack[1])) {
       stack = stack.slice(1);
     }
 
@@ -174,10 +174,10 @@ export class StackUtils {
    * Captures the first line of the stack trace (or the first line after `startStackFunction` if supplied),
    * and returns a `CallSite` like object that is serialization friendly (properties are actual values
    * instead of getter functions).
-   * 
+   *
    * The available properties are:
-   * 
-   * - `line`: `number` 
+   *
+   * - `line`: `number`
    * - `column`: `number`
    * - `file`: `string`
    * - `constructor`: `boolean`
@@ -243,7 +243,7 @@ export class StackUtils {
   /**
    * Parses a `string` (which should be a single line from a stack trace), and generates an object with
    * the following properties:
-   * 
+   *
    * - `line`: `number`
    * - `column`: `number`
    * - `file`: `string`

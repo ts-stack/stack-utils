@@ -17,7 +17,7 @@ function internals() {
   ]);
 }
 
-const stackUtils = new StackUtils({internals: internals(), cwd: utils.fixtureDir});
+const stackUtils = new StackUtils({ internals: internals(), cwd: utils.fixtureDir, removeFirstLine: true });
 
 t.test('indents lines after first "From previous event:"', t => {
   return longStackTraces.bluebird

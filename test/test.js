@@ -30,7 +30,7 @@ t.test('ok if called without a process object', t => {
   });
   const expected = `${cwd}/foo (foo.js:3:8)\n`;
   const raw = `    at ${expected}\n`;
-  const stack = new StackUtils({ internals: [] });
+  const stack = new StackUtils({ internals: [] , removeFirstLine: true });
   t.equal(stack.clean(raw), expected, 'no cwd is stripped off');
   t.end();
 });
@@ -60,12 +60,12 @@ t.test('clean: truncates cwd', t => {
   ];
   const expected = utils.join(expectedArray);
 
-  let stack = new StackUtils({cwd: '/user/dev/project', internals: []});
+  let stack = new StackUtils({cwd: '/user/dev/project', internals: [], removeFirstLine: true });
   t.equal(stack.clean(LinuxStack1), expected, 'accepts a linux string');
   t.equal(stack.clean(LinuxStack1.split('\n')), expected, 'accepts an array');
   t.equal(stack.clean(LinuxStack1.split('\n').slice(1)), expected, 'slices off the message line');
 
-  stack = new StackUtils({cwd: 'Z:\\user\\dev\\project', internals: []});
+  stack = new StackUtils({cwd: 'Z:\\user\\dev\\project', internals: [], removeFirstLine: true });
   t.equal(stack.clean(WindowsStack1), expected, 'accepts a windows string');
 
   const expectIndented = utils.join(expectedArray.map(a => '    ' + a));
@@ -75,7 +75,7 @@ t.test('clean: truncates cwd', t => {
 });
 
 t.test('clean: eliminates internals', t => {
-  let stack = new StackUtils({cwd: '/user/dev'});
+  let stack = new StackUtils({cwd: '/user/dev', removeFirstLine: true });
   const expected = utils.join([
     'foo (project/foo.js:3:8)',
     'bar (project/foo.js:7:2)',
@@ -84,19 +84,19 @@ t.test('clean: eliminates internals', t => {
   ]);
   t.equal(stack.clean(LinuxStack1), expected);
 
-  stack = new StackUtils({cwd: 'Z:\\user\\dev'});
+  stack = new StackUtils({cwd: 'Z:\\user\\dev', removeFirstLine: true });
   t.equal(stack.clean(WindowsStack1), expected);
   t.end();
 });
 
 t.test('clean: returns null if it is all internals', t => {
-  const stack = new StackUtils();
+  const stack = new StackUtils({removeFirstLine: true});
   t.equal(stack.clean(utils.join(internalStack())), '');
   t.end();
 });
 
 t.test('captureString: two redirects', t => {
-  const stack = new StackUtils({internals: internals(), cwd: utils.fixtureDir});
+  const stack = new StackUtils({internals: internals(), cwd: utils.fixtureDir, removeFirstLine: true});
   const capture = new CaptureFixture(stack);
 
   const capturedString = capture.redirect1('redirect2', 'call', 'captureString');
@@ -109,7 +109,7 @@ t.test('captureString: two redirects', t => {
 });
 
 t.test('captureString: with startStack function', t => {
-  const stack = new StackUtils({internals: internals(), cwd: utils.fixtureDir});
+  const stack = new StackUtils({internals: internals(), cwd: utils.fixtureDir, removeFirstLine: true});
   const capture = new CaptureFixture(stack);
 
   const capturedString = capture.redirect1('redirect2', 'call', 'captureString', capture.call);
@@ -121,7 +121,7 @@ t.test('captureString: with startStack function', t => {
 });
 
 t.test('captureString: with limit', t => {
-  const stack = new StackUtils({internals: internals(), cwd: utils.fixtureDir});
+  const stack = new StackUtils({internals: internals(), cwd: utils.fixtureDir, removeFirstLine: true });
   const capture = new CaptureFixture(stack);
 
   const capturedString = capture.redirect1('redirect2', 'call', 'captureString', 1);
@@ -132,7 +132,7 @@ t.test('captureString: with limit', t => {
 });
 
 t.test('captureString: with limit and startStack', t => {
-  const stack = new StackUtils({internals: internals(), cwd: utils.fixtureDir});
+  const stack = new StackUtils({internals: internals(), cwd: utils.fixtureDir, removeFirstLine: true });
   const capture = new CaptureFixture(stack);
 
   const capturedString = capture.redirect1('redirect2', 'call', 'captureString', 1, capture.call);
@@ -143,7 +143,7 @@ t.test('captureString: with limit and startStack', t => {
 });
 
 t.test('capture returns an array of call sites', t => {
-  const stackUtil = new StackUtils({internals: internals(), cwd: utils.fixtureDir});
+  const stackUtil = new StackUtils({internals: internals(), cwd: utils.fixtureDir, removeFirstLine: true });
   const capture = new CaptureFixture(stackUtil);
   const stack = capture.redirect1('call', 'capture').slice(0, 2);
   t.equal(stack[0].getFileName(), path.join(utils.fixtureDir, 'capture-fixture.js'));
@@ -153,7 +153,7 @@ t.test('capture returns an array of call sites', t => {
 });
 
 t.test('capture: with limit', t => {
-  const stackUtil = new StackUtils({internals: internals(), cwd: utils.fixtureDir});
+  const stackUtil = new StackUtils({internals: internals(), cwd: utils.fixtureDir, removeFirstLine: true });
   const capture = new CaptureFixture(stackUtil);
   const stack = capture.redirect1('redirect2', 'call', 'capture', 1);
   t.equal(stack.length, 1);
@@ -162,7 +162,7 @@ t.test('capture: with limit', t => {
 });
 
 t.test('capture: with stackStart function', t => {
-  const stackUtil = new StackUtils({internals: internals(), cwd: utils.fixtureDir});
+  const stackUtil = new StackUtils({internals: internals(), cwd: utils.fixtureDir, removeFirstLine: true });
   const capture = new CaptureFixture(stackUtil);
   const stack = capture.redirect1('redirect2', 'call', 'capture', capture.call);
   t.ok(stack.length > 1);
@@ -171,7 +171,7 @@ t.test('capture: with stackStart function', t => {
 });
 
 t.test('capture: with limit and stackStart function', t => {
-  const stackUtil = new StackUtils({internals: internals(), cwd: utils.fixtureDir});
+  const stackUtil = new StackUtils({internals: internals(), cwd: utils.fixtureDir, removeFirstLine: true });
   const capture = new CaptureFixture(stackUtil);
   const stack = capture.redirect1('redirect2', 'call', 'capture', 1, capture.call);
   t.equal(stack.length, 1);
@@ -188,7 +188,7 @@ t.test('capture: with wrapCallSite function', t => {
       return 'testOverrideFunctionName';
     }
   });
-  const stackUtil = new StackUtils({internals: internals(), cwd: utils.fixtureDir, wrapCallSite: wrapper});
+  const stackUtil = new StackUtils({internals: internals(), cwd: utils.fixtureDir, wrapCallSite: wrapper, removeFirstLine: true });
   const capture = new CaptureFixture(stackUtil);
   const stack = capture.redirect1('redirect2', 'call', 'capture', 1, capture.call);
   t.equal(stack.length, 1);
@@ -198,7 +198,7 @@ t.test('capture: with wrapCallSite function', t => {
 });
 
 t.test('at', t => {
-  const stackUtil = new StackUtils({internals: internals(), cwd: utils.fixtureDir});
+  const stackUtil = new StackUtils({internals: internals(), cwd: utils.fixtureDir, removeFirstLine: true });
   const capture = new CaptureFixture(stackUtil);
   const at = capture.redirect1('call', 'at');
 
@@ -214,7 +214,7 @@ t.test('at', t => {
 });
 
 t.test('at: with stackStart', t => {
-  const stackUtil = new StackUtils({internals: internals(), cwd: __dirname});
+  const stackUtil = new StackUtils({internals: internals(), cwd: __dirname, removeFirstLine: true });
   const capture = new CaptureFixture(stackUtil);
 
   const at = capture.redirect1('call', 'at', capture.call);
@@ -230,7 +230,7 @@ t.test('at: with stackStart', t => {
 });
 
 t.test('at: inside a constructor call', t => {
-  const stackUtil = new StackUtils({internals: internals(), cwd: utils.fixtureDir});
+  const stackUtil = new StackUtils({internals: internals(), cwd: utils.fixtureDir, removeFirstLine: true });
   const capture = new CaptureFixture(stackUtil);
 
   const at = capture.const('call', 'at', capture.call);
@@ -246,7 +246,7 @@ t.test('at: inside a constructor call', t => {
 });
 
 t.test('at: method on an [Object] instance', t => {
-  const stackUtil = new StackUtils({internals: internals(), cwd: utils.fixtureDir});
+  const stackUtil = new StackUtils({internals: internals(), cwd: utils.fixtureDir, removeFirstLine: true });
   const capture = new CaptureFixture(stackUtil);
 
   const at = capture.const('obj', 'foo', 'call', 'at', capture.call);
@@ -261,14 +261,14 @@ t.test('at: method on an [Object] instance', t => {
 });
 
 t.test('at: returns empty object if #capture() returns an empty stack', t => {
-  const stackUtil = new StackUtils();
+  const stackUtil = new StackUtils({  removeFirstLine: true });
   stackUtil.capture = () => [];
   t.same(stackUtil.at(), {});
   t.end();
 });
 
 t.test('at: eval', t => {
-  const stackUtil = new StackUtils({internals: internals(), cwd: utils.fixtureDir});
+  const stackUtil = new StackUtils({internals: internals(), cwd: utils.fixtureDir, removeFirstLine: true });
   const capture = new CaptureFixture(stackUtil);
 
   const at = capture.eval('call', 'at', capture.call);
@@ -290,7 +290,7 @@ t.test('at: eval', t => {
 });
 
 t.test('parseLine', t => {
-  const stack = new StackUtils({internals: internals(), cwd: '/user/dev/project'});
+  const stack = new StackUtils({internals: internals(), cwd: '/user/dev/project', removeFirstLine: true });
   const capture = new CaptureFixture(stack);
 
   t.same(stack.parseLine('foo'), null, 'should not match');
@@ -366,7 +366,7 @@ t.test('parseLine', t => {
 });
 
 t.test('parseLine: handles native errors', t => {
-  const stackUtils = new StackUtils();
+  const stackUtils = new StackUtils({  removeFirstLine: true , removeFirstLine: true });
   t.same(stackUtils.parseLine('    at Error (native)'), {
     native: true,
     function: 'Error'
@@ -376,7 +376,7 @@ t.test('parseLine: handles native errors', t => {
 
 t.test('parseLine: handles parens', t => {
   const line = '    at X.<anonymous> (/USER/Db (Person)/x/y.js:14:11)';
-  const stackUtils = new StackUtils();
+  const stackUtils = new StackUtils({  removeFirstLine: true , removeFirstLine: true });
   t.same(stackUtils.parseLine(line), {
     line: 14,
     column: 11,
