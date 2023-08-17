@@ -2,9 +2,9 @@ import { builtinModules } from 'module';
 
 import type { StackUtilsOptions, StackData, StackLineData, CallSiteLike } from './mix';
 
-const natives = []
-  .concat(builtinModules, 'bootstrap_node', 'node')
-  .map((n) => new RegExp(`(?:\\((?:node:)?${n}(?:\\.js)?:\\d+:\\d+\\)$|^\\s*at (?:node:)?${n}(?:\\.js)?:\\d+:\\d+$)`));
+const natives = [...builtinModules, 'bootstrap_node', 'node'].map(
+  (n) => new RegExp(`(?:\\((?:node:)?${n}(?:\\.js)?:\\d+:\\d+\\)$|^\\s*at (?:node:)?${n}(?:\\.js)?:\\d+:\\d+$)`),
+);
 
 natives.push(
   /\((?:node:)?internal\/[^:]+:\d+:\d+\)$/,
@@ -15,9 +15,9 @@ natives.push(
 export class StackUtils {
   protected cwd: string;
   protected internals: RegExp[];
-  protected wrapCallSite: (callSite: NodeJS.CallSite) => NodeJS.CallSite;
+  protected wrapCallSite?: (callSite: NodeJS.CallSite) => NodeJS.CallSite;
 
-  constructor(protected opts?: StackUtilsOptions) {
+  constructor(protected opts: StackUtilsOptions = {}) {
     this.opts = {
       ignoredPackages: [],
       ...opts,
@@ -31,8 +31,8 @@ export class StackUtils {
       this.opts.cwd = '';
     }
 
-    this.cwd = this.opts.cwd.replace(/\\/g, '/');
-    this.internals = [].concat(this.opts.internals, this.ignoredPackagesRegExp(this.opts.ignoredPackages));
+    this.cwd = this.opts.cwd!.replace(/\\/g, '/');
+    this.internals = this.opts.internals.concat(this.ignoredPackagesRegExp(this.opts.ignoredPackages || []));
 
     this.wrapCallSite = this.opts.wrapCallSite;
   }
@@ -52,7 +52,7 @@ export class StackUtils {
    * Returns a `string` with the cleaned up stack (always terminated with a `\n` newline character).
    * Spaces at the start of each line are trimmed, indentation can be added by setting `indent` to the
    * desired number of spaces.
-   * 
+   *
    * @todo Refactor this!
    */
   clean(stack: string | string[], indent = 0) {
@@ -65,7 +65,7 @@ export class StackUtils {
     }
 
     let outdent = false;
-    let lastNonAtLine: string = null;
+    let lastNonAtLine = '';
     const result: string[] = [];
 
     stack.forEach((st) => {
@@ -96,7 +96,7 @@ export class StackUtils {
         if (isAtLine) {
           if (lastNonAtLine) {
             result.push(lastNonAtLine);
-            lastNonAtLine = null;
+            lastNonAtLine = '';
           }
 
           result.push(st);
