@@ -2,9 +2,6 @@ import { builtinModules } from 'module';
 
 import { StackUtilsOptions, StackData, StackLineData, CallSiteLike } from './mix';
 
-type CallSite = NodeJS.CallSite;
-const cwd = typeof process == 'object' && process && typeof process.cwd == 'function' ? process.cwd() : '.';
-
 const natives = []
   .concat(builtinModules, 'bootstrap_node', 'node')
   .map((n) => new RegExp(`(?:\\((?:node:)?${n}(?:\\.js)?:\\d+:\\d+\\)$|^\\s*at (?:node:)?${n}(?:\\.js)?:\\d+:\\d+$)`));
@@ -15,12 +12,10 @@ natives.push(
   /\/\.node-spawn-wrap-\w+-\w+\/node:\d+:\d+\)?$/,
 );
 
-type wrapCallSiteFn = (callSite: CallSite, index: number, array: CallSite[]) => CallSite;
-
 export class StackUtils {
   private _cwd: string;
   private _internals: RegExp[];
-  private _wrapCallSite: wrapCallSiteFn;
+  private _wrapCallSite: (callSite: NodeJS.CallSite) => NodeJS.CallSite;
 
   constructor(opts: StackUtilsOptions) {
     opts = {
@@ -33,7 +28,7 @@ export class StackUtils {
     }
 
     if ('cwd' in opts === false) {
-      opts.cwd = cwd;
+      opts.cwd = typeof process == 'object' && process && typeof process.cwd == 'function' ? process.cwd() : '.';
     }
 
     this._cwd = opts.cwd.replace(/\\/g, '/');
@@ -42,10 +37,22 @@ export class StackUtils {
     this._wrapCallSite = opts.wrapCallSite;
   }
 
+  /**
+   * Returns an array of regular expressions that be used to cull lines from the stack trace that
+   * reference common Node.js internal files.
+   */
   static nodeInternals() {
     return [...natives];
   }
 
+  /**
+   * Cleans up a stack trace by deleting any lines that match the `internals` passed to the constructor,
+   * and shortening file names relative to `cwd`.
+   *
+   * Returns a `string` with the cleaned up stack (always terminated with a `\n` newline character).
+   * Spaces at the start of each line are trimmed, indentation can be added by setting `indent` to the
+   * desired number of spaces.
+   */
   clean(stack: string | string[], indent = 0) {
     if (!Array.isArray(stack)) {
       stack = stack.split('\n');
@@ -98,6 +105,14 @@ export class StackUtils {
     return result.map((line) => `${indentStr}${line}\n`).join('');
   }
 
+  /**
+   * Captures the current stack trace, cleans it using `stackUtils.clean(stack)`, and returns a string with
+   * the cleaned stack trace. It takes the same arguments as `stackUtils.capture`.
+   *
+   * @param limit
+   * @param fn
+   * @returns
+   */
   captureString(limit: number, fn = this.captureString) {
     if (typeof limit == 'function') {
       fn = limit;
@@ -118,9 +133,19 @@ export class StackUtils {
     return this.clean(stack);
   }
 
-  capture(limit: number, fn = this.capture) {
+  /**
+   * Captures the current stack trace, returning an array of `CallSite`s. There are good overviews
+   * of the available CallSite methods [here](https://github.com/v8/v8/wiki/Stack%20Trace%20API#customizing-stack-traces),
+   * and [here](https://github.com/sindresorhus/callsites#api).
+   *
+   * @param limit Limits the number of lines returned by dropping all lines in excess of the limit.
+   * This removes lines from the stack trace.
+   * @param startStackFunction The function where the stack trace should start. The first line of the stack trace
+   * will be the function that called `startStackFunction`. This removes lines from the end of the stack trace.
+   */
+  capture(limit: number = Infinity, startStackFunction = this.capture) {
     if (typeof limit == 'function') {
-      fn = limit;
+      startStackFunction = limit;
       limit = Infinity;
     }
 
@@ -138,15 +163,32 @@ export class StackUtils {
     }
 
     const obj: any = {};
-    Error.captureStackTrace(obj, fn);
+    Error.captureStackTrace(obj, startStackFunction);
     const { stack } = obj;
     Object.assign(Error, { prepareStackTrace, stackTraceLimit });
 
     return stack;
   }
 
-  at(fn: (...args: any[]) => any = this.at) {
-    const [site] = this.capture(1, fn);
+  /**
+   * Captures the first line of the stack trace (or the first line after `startStackFunction` if supplied),
+   * and returns a `CallSite` like object that is serialization friendly (properties are actual values
+   * instead of getter functions).
+   * 
+   * The available properties are:
+   * 
+   * - `line`: `number` 
+   * - `column`: `number`
+   * - `file`: `string`
+   * - `constructor`: `boolean`
+   * - `evalOrigin`: `string`
+   * - `native`: `boolean`
+   * - `type`: `string`
+   * - `function`: `string`
+   * - `method`: `string`
+   */
+  at(startStackFunction: (...args: any[]) => any = this.at) {
+    const [site] = this.capture(1, startStackFunction);
 
     if (!site) {
       return {};
@@ -198,6 +240,22 @@ export class StackUtils {
     return res;
   }
 
+  /**
+   * Parses a `string` (which should be a single line from a stack trace), and generates an object with
+   * the following properties:
+   * 
+   * - `line`: `number`
+   * - `column`: `number`
+   * - `file`: `string`
+   * - `constructor`: `boolean`
+   * - `evalOrigin`: `string`
+   * - `evalLine`: `number`
+   * - `evalColumn`: `number`
+   * - `evalFile`: `string`
+   * - `native`: `boolean`
+   * - `function`: `string`
+   * - `method`: `string`
+   */
   parseLine(line: string) {
     const match = line && line.match(re);
     if (!match) {
@@ -251,7 +309,7 @@ export class StackUtils {
     }
 
     if (fname) {
-      const methodMatch = fname.match(methodRe);
+      const methodMatch = fname.match(/^(.*?) \[as (.*?)\]$/);
       if (methodMatch) {
         fname = methodMatch[1];
         method = methodMatch[2];
@@ -337,16 +395,12 @@ const re = new RegExp(
     '(\\)?)$',
 );
 
-const methodRe = /^(.*?) \[as (.*?)\]$/;
-
 function escapeStringRegexp(str: string) {
-	if (typeof str !== 'string') {
-		throw new TypeError('Expected a string');
-	}
+  if (typeof str !== 'string') {
+    throw new TypeError('Expected a string');
+  }
 
-	// Escape characters with special meaning either inside or outside character sets.
-	// Use a simple backslash escape when it’s always valid, and a `\xnn` escape when the simpler form would be disallowed by Unicode patterns’ stricter grammar.
-	return str
-		.replace(/[|\\{}()[\]^$+*?.]/g, '\\$&')
-		.replace(/-/g, '\\x2d');
+  // Escape characters with special meaning either inside or outside character sets.
+  // Use a simple backslash escape when it’s always valid, and a `\xnn` escape when the simpler form would be disallowed by Unicode patterns’ stricter grammar.
+  return str.replace(/[|\\{}()[\]^$+*?.]/g, '\\$&').replace(/-/g, '\\x2d');
 }
