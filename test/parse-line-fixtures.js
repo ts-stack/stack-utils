@@ -3,7 +3,7 @@
 const t = require('tap');
 const cases = require('./fixtures/parse-fixture.json');
 const lines = Object.keys(cases);
-const { StackUtils } = require('../dist');
+const { StackUtils } = require('@ts-stack/stack-utils');
 const stack = new StackUtils();
 
 t.plan(lines.length * 2);

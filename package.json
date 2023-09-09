@@ -1,14 +1,10 @@
 {
-  "name": "@ts-stack/stack-utils",
-  "version": "1.0.3",
-  "description": "Captures and cleans stack traces",
-  "main": "dist/index",
-  "types": "src/index",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/ts-stack/stack-utils.git"
-  },
-  "homepage": "https://github.com/ts-stack/stack-utils",
+  "private": true,
+  "name": "monorepo",
+  "version": "1.0.0",
+  "workspaces": [
+    "packages/*"
+  ],
   "scripts": {
     "build": "rimraf dist/* && tsc -p tsconfig.build.json",
     "test": "tap",

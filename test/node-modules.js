@@ -2,7 +2,7 @@
 
 const t = require('tap');
 
-const { StackUtils } = require('../dist');
+const { StackUtils } = require('@ts-stack/stack-utils');
 
 function helper(fromModule, ignoredPackages) {
   const stackUtil = new StackUtils({ignoredPackages});

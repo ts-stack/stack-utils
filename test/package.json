@@ -1,0 +1,16 @@
+{
+  "private": true,
+  "type": "commonjs",
+  "name": "test-package",
+  "version": "1.1.0",
+  "scripts": {
+    "test": "tap",
+    "posttest": "rimraf .nyc_output"
+  },
+  "keywords": [],
+  "author": "Isaac Z. Schlueter, James Talmage, Костя Третяк and Contributors",
+  "license": "MIT",
+  "tap": {
+    "check-coverage": false
+  }
+}

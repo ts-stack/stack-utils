@@ -2,7 +2,7 @@
 
 const path = require('path');
 const t = require('tap');
-const { StackUtils } = require('../dist');
+const { StackUtils } = require('@ts-stack/stack-utils');
 const CaptureFixture = require('./fixtures/capture-fixture');
 const utils = require('./_utils');
 
@@ -23,7 +23,7 @@ t.test('ok if called without a process object', t => {
   const cwd = proc.cwd().replace(/\\/g, '/');
   t.teardown(() => global.process = proc);
   global.process = null;
-  const { StackUtils } = t.mock('../dist', {
+  const { StackUtils } = t.mock('@ts-stack/stack-utils', {
     // need a fresh copy of these because they also look at global process
     'source-map-support': t.mock('source-map-support'),
     'own-or-env': t.mock('own-or-env'),

@@ -1,7 +1,7 @@
 'use strict';
 
 const t = require('tap');
-const { StackUtils } = require('../dist');
+const { StackUtils } = require('@ts-stack/stack-utils');
 
 
 t.test('removes only first line in the trace', t => {
