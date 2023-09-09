@@ -1,4 +1,4 @@
-/// <reference types="node" />
+/// <reference types="node" resolution-mode="require"/>
 export interface StackUtilsOptions {
     /**
      * Is it necessary to delete the first line of the error that starts with `error.message`?

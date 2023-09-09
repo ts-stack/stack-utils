@@ -1,6 +1,6 @@
 import { builtinModules } from 'module';
 
-import type { StackUtilsOptions, StackData, StackLineData, CallSiteLike } from './mix';
+import type { StackUtilsOptions, StackData, StackLineData, CallSiteLike } from './mix.js';
 
 const natives = [...builtinModules, 'bootstrap_node', 'node'].map(
   (n) => new RegExp(`(?:\\((?:node:)?${n}(?:\\.js)?:\\d+:\\d+\\)$|^\\s*at (?:node:)?${n}(?:\\.js)?:\\d+:\\d+$)`),

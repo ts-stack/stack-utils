@@ -6,9 +6,10 @@
     "packages/*"
   ],
   "scripts": {
-    "build": "rimraf dist/* && tsc -p tsconfig.build.json",
-    "test": "tap",
-    "posttest": "rimraf .nyc_output"
+    "build": "tsc -b packages",
+    "test": "yarn build && cp ./packages/lib/package.cjs.json ./packages/lib/dist-cjs/package.json && tap",
+    "posttest": "rimraf .nyc_output",
+    "clean": "rimraf packages/*/dist*"
   },
   "keywords": [],
   "author": "Isaac Z. Schlueter, James Talmage, Костя Третяк and Contributors",

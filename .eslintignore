@@ -9,3 +9,4 @@ coverage/*
 # custom definition files
 /src/types/
 test
+packages/lib/dist*

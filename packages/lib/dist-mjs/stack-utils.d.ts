@@ -1,4 +1,4 @@
-/// <reference types="node" />
+/// <reference types="node" resolution-mode="require"/>
 import type { StackUtilsOptions, StackData, StackLineData } from './mix.js';
 export declare class StackUtils {
     protected opts: StackUtilsOptions;

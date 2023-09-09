@@ -11,3 +11,5 @@ CHANGELOG.md
 tsconfig.*
 test
 tests
+tsconfig*
+package.cjs.json

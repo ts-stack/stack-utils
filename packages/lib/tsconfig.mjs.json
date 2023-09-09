@@ -1,0 +1,11 @@
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "outDir": "dist-mjs",
+    "tsBuildInfoFile": "dist-mjs/build.tsbuildinfo",
+    "rootDir": "src"
+  },
+  "include": [
+    "src"
+  ]
+}
