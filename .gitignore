@@ -36,6 +36,6 @@ bower_components
 Thumbs.db
 
 # Ignore built ts files
-dist
+dist*
 
 .nyc_output

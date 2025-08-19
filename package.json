@@ -1,41 +1,50 @@
 {
-  "private": true,
-  "name": "monorepo",
-  "version": "1.0.0",
-  "workspaces": [
-    "packages/*"
-  ],
+  "name": "@ts-stack/stack-utils",
+  "version": "1.1.0",
+  "type": "module",
+  "description": "Captures and cleans stack traces",
+  "exports": {
+    ".": {
+      "import": "./dist-mjs/index.js",
+      "require": "./dist-cjs/index.js",
+      "default": "./dist-mjs/index.js"
+    }
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ts-stack/stack-utils.git"
+  },
+  "homepage": "https://github.com/ts-stack/stack-utils",
   "scripts": {
-    "build": "tsc -b packages",
-    "test": "yarn build && cp ./packages/lib/package.cjs.json ./packages/lib/dist-cjs/package.json && tap",
+    "build": "npm run build-mjs && npm run build-cjs",
+    "build-mjs": "tsc -b tsconfig.mjs.json",
+    "build-cjs": "tsc -b tsconfig.cjs.json && cp ./package.cjs.json ./dist-cjs/package.json",
+    "test": "npm run build && cp ./package.cjs.json ./dist-cjs/package.json && tap",
     "posttest": "rimraf .nyc_output",
-    "clean": "rimraf packages/*/dist*"
+    "clean": "rimraf dist*"
   },
   "keywords": [],
   "author": "Isaac Z. Schlueter, James Talmage, Костя Третяк and Contributors",
   "license": "MIT",
+  "tap": {
+    "check-coverage": false,
+    "coverage": false
+    
+  },
   "devDependencies": {
-    "@types/eslint": "^8.44.0",
-    "@types/jest": "^29.5.3",
-    "@types/node": "^20.4.4",
-    "@typescript-eslint/eslint-plugin": "^6.1.0",
-    "@typescript-eslint/parser": "^6.1.0",
+    "@types/eslint": "^9.6.1",
+    "@types/node": "^24.3.0",
+    "@typescript-eslint/eslint-plugin": "^8.40.0",
+    "@typescript-eslint/parser": "^8.40.0",
     "bluebird": "^3.7.2",
-    "coveralls": "^3.0.9",
-    "eslint": "^8.45.0",
-    "jest": "^29.6.1",
+    "eslint": "^9.33.0",
     "nested-error-stacks": "^2.1.0",
     "pify": "^4.0.1",
-    "prettier": "^3.0.0",
+    "prettier": "^3.6.2",
     "q": "^1.5.1",
-    "rimraf": "^5.0.1",
-    "source-map-support": "^0.5.20",
+    "rimraf": "^6.0.1",
+    "source-map-support": "^0.5.21",
     "tap": "^16.3.0",
-    "ts-jest": "^29.1.1",
-    "ts-node": "^10.9.1",
-    "typescript": "^5.1.6"
-  },
-  "tap": {
-    "check-coverage": false
+    "typescript": "^5.9.2"
   }
 }

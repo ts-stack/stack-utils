@@ -1,7 +1,7 @@
 'use strict';
 
 const t = require('tap');
-const { StackUtils } = require('@ts-stack/stack-utils');
+const { StackUtils } = require('../dist-cjs');
 
 const utils = require('./_utils');
 
