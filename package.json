@@ -29,7 +29,6 @@
   "tap": {
     "check-coverage": false,
     "coverage": false
-    
   },
   "devDependencies": {
     "@types/eslint": "^9.6.1",
@@ -38,13 +37,13 @@
     "@typescript-eslint/parser": "^8.40.0",
     "bluebird": "^3.7.2",
     "eslint": "^9.33.0",
-    "nested-error-stacks": "^2.1.0",
+    "nested-error-stacks": "^2.1.1",
     "pify": "^4.0.1",
     "prettier": "^3.6.2",
     "q": "^1.5.1",
     "rimraf": "^6.0.1",
     "source-map-support": "^0.5.21",
-    "tap": "^16.3.0",
+    "tap": "^16.3.10",
     "typescript": "^5.9.2"
   }
 }
