@@ -1,6 +1,7 @@
 {
   "compilerOptions": {
     "strict": true,
+    "types": ["node"],
     "module": "nodenext",
     "moduleResolution": "nodenext",
     "declaration": true,
@@ -15,8 +16,5 @@
     "strictPropertyInitialization": false,
     "noImplicitAny": true,
     "removeComments": false,
-  },
-  "exclude": [
-    "**/node_modules/*"
-  ]
+  }
 }

@@ -8,7 +8,6 @@ jest.*
 nodemon.json
 CHANGELOG.md
 *.tsbuildinfo
-tsconfig.*
 test
 tests
 tsconfig*

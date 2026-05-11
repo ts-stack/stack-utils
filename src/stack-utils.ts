@@ -23,10 +23,7 @@ export class StackUtils {
       ...opts,
     };
 
-    if (!this.opts.internals) {
-      this.opts.internals = StackUtils.nodeInternals();
-    }
-
+    this.opts.internals ??= StackUtils.nodeInternals();
     if ('cwd' in this.opts === false) {
       this.opts.cwd = '';
     }
